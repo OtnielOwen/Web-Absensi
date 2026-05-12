@@ -1,0 +1,68 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  padding: 0;
+  margin: 0;
+  scroll-behavior: smooth;
+}
+
+:root {
+  --primary-green-1: #21673f;
+  --primary-green-2: #389a62;
+  --primary-green-3: #19ce67;
+  --primary-soft-green-1: #e8f9ef;
+  --primary-soft-green-2: #def5ef;
+  --primary-soft-green-3: #e3e6ea;
+  --secondary-color: #fef0cd;
+  --primary-gradient: var(--ant-primary, linear-gradient(180deg, #19ce67 0%, #52a352 100%));
+}
+
+body::-webkit-scrollbar {
+  width: 12px !important;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  height: 8px !important;
+}
+
+body::-webkit-scrollbar-track,
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f5f5f9 !important;
+}
+
+body::-webkit-scrollbar-thumb,
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #bdbdbd !important;
+  border-radius: 20px !important;
+  border: 3px solid #f5f5f9 !important;
+}
+
+span.ant-typography-secondary {
+  font-weight: 300;
+}
+
+section h2.ant-typography {
+  margin-top: 0;
+}
+
+.ant-select-dropdown .ant-select-item-option-content {
+  white-space: normal !important;
+}
+
+.max-second-rows {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ant-drawer-right .ant-menu-inline {
+  border-inline-end: none !important;
+}
+
+.ant-card-body > .ant-image img {
+  border-radius: var(--ant-border-radius-sm);
+}
