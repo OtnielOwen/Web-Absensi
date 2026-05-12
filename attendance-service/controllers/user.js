@@ -89,7 +89,7 @@ export const getUserById = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
 
     const responseUser = await User.findOne({
-      attributes: ["id", "uuid", "name", "email", "isAdmin", "createdAt"],
+      attributes: ["id", "uuid", "name", "email", "isAdmin", "photoProfile", "createdAt"],
       where: {
         id: user.id,
       },
@@ -164,6 +164,7 @@ export const loginUser = async (req, res) => {
       isAdmin: user.isAdmin,
       status: employeeStatus.name,
       squad: squad.name,
+      photoProfile: user.photoProfile,
     },
     token,
   });
@@ -212,7 +213,7 @@ export const createUser = async (req, res, next) => {
       message: "Register Berhasil",
     });
   } catch (error) {
-    console.log("ERROR CREATE USER:", error); 
+    console.log("ERROR CREATE USER:", error);
     res.status(400).json({
       success: false,
       message: error.message,
@@ -254,5 +255,41 @@ export const updateUser = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const uploadProfilePhoto = async (req, res) => {
+  try {
+    console.log("REQ USER ID:", req.userId);
+
+    const user = await User.findOne({
+      where: {
+        id: req.userId,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User tidak ditemukan",
+      });
+    }
+
+    user.photoProfile = req.file.filename;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Foto profile berhasil diupload",
+      data: user,
+    });
+  } catch (error) {
+    console.log("UPLOAD ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

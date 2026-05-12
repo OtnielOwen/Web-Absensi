@@ -105,7 +105,15 @@ export const getAllUsersAttendance = async (req, res) => {
     include: [
       {
         model: User,
-        attributes: ["id", "uuid", "name", "email", "isAdmin", "createdAt"],
+        attributes: [
+          "id",
+          "uuid",
+          "name",
+          "email",
+          "isAdmin",
+          "createdAt",
+          "photoProfile",
+        ],
         where: filterOptionsByUser,
         include: [
           {

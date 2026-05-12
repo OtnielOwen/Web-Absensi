@@ -16,6 +16,7 @@ const User = db.define(
         notEmpty: true,
       },
     },
+
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -24,6 +25,7 @@ const User = db.define(
         len: [3, 100],
       },
     },
+
     email: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -32,6 +34,7 @@ const User = db.define(
         isEmail: true,
       },
     },
+
     password: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -39,6 +42,12 @@ const User = db.define(
         notEmpty: true,
       },
     },
+
+    photoProfile: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
     isAdmin: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -47,6 +56,7 @@ const User = db.define(
         notEmpty: true,
       },
     },
+
     employeeStatusId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -54,6 +64,7 @@ const User = db.define(
         notEmpty: true,
       },
     },
+
     squadId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -68,11 +79,13 @@ const User = db.define(
 );
 
 EmployeeStatus.hasOne(User);
+
 User.belongsTo(EmployeeStatus, {
   foreignKey: "employeeStatusId",
 });
 
 Squad.hasOne(User);
+
 User.belongsTo(Squad, {
   foreignKey: "squadId",
 });

@@ -76,12 +76,13 @@ function AdminUserDetailDashboard() {
                     <Avatar
                       size={128}
                       src={
-                        <Image
-                          src={data?.imageUrl?.[0]?.url}
-                          fallback="https://fakeimg.pl/400x400?text=not found"
-                        />
+                        data?.photoProfile
+                          ? `http://localhost:5000/uploads/profile/${data.photoProfile}`
+                          : undefined
                       }
-                    />
+                    >
+                      {!data?.photoProfile && data?.name?.charAt(0)}
+                    </Avatar>
                   </div>
 
                   <Space direction="vertical">

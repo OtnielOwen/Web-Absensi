@@ -20,6 +20,10 @@ import DefaultLoading from '@/components/DefaultLoading';
 import { getUser } from '@/utilities/authorization';
 import useQueryFetch from '@/utilities/hooks/useQueryFetch';
 
+import { Upload, message } from 'antd';
+import axios from 'axios';
+import CONSTANT from '@/utilities/constant';
+
 const { Title, Text } = Typography;
 
 function DashboardPage() {
@@ -43,6 +47,7 @@ function DashboardPage() {
   const handleMonthSelect = (date) => {
     const month = date?.format('MM');
     const year = date?.format('YYYY');
+
     setSelectedPeriod({
       month,
       year,
@@ -58,8 +63,10 @@ function DashboardPage() {
       switch (condition) {
         case 'Sakit':
           return 'error';
+
         case 'Kurang Fit':
           return '#faad14';
+
         default:
           return '#52c41a';
       }
@@ -89,7 +96,49 @@ function DashboardPage() {
 
   const cellRender = (current, info) => {
     if (info.type === 'date') return dateCellRender(current);
+
     return info.originNode;
+  };
+
+  const handleUploadPhoto = async (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+
+      formData.append('photo', file);
+
+      const token = localStorage.getItem('access_token');
+
+      const res = await fetch('http://localhost:5000/api/v1/user/profile-photo', {
+        method: 'PUT',
+        headers: {
+          'x-auth-token': token,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      console.log(data);
+
+      alert('Foto profile berhasil diupload');
+
+      const updatedUser = {
+        ...user,
+        photoProfile: data?.data?.photoProfile,
+      };
+
+      localStorage.setItem('user_attributes', JSON.stringify(updatedUser));
+
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+
+      alert('Upload gagal');
+    }
   };
 
   return (
@@ -97,6 +146,7 @@ function DashboardPage() {
       <Title level={3} style={{ margin: 'auto' }}>
         Dashboard
       </Title>
+
       <Row gutter={[16, 16]} style={{ marginTop: 36 }}>
         <Col span={24} md={12} xxl={8}>
           <Card>
@@ -111,26 +161,86 @@ function DashboardPage() {
               <Space
                 size={md ? 'large' : 'small'}
                 direction={!lg && 'vertical'}
-                style={{ position: 'relative', width: !md && '100%' }}
+                style={{
+                  position: 'relative',
+                  width: !md && '100%',
+                }}
               >
                 <Row align="middle" style={{ flexDirection: 'column' }}>
                   <div>
                     <Avatar
                       size={128}
-                      src={<Image src={user?.imageUrl?.[0]?.url} fallback={UserFallback} />}
+                      src={
+                        <Image
+                          src={
+                            user?.photoProfile
+                              ? `http://localhost:5000/uploads/profile/${user.photoProfile}`
+                              : UserFallback
+                          }
+                          fallback={UserFallback}
+                        />
+                      }
                       style={{ marginTop: '-24px', top: '-1rem', left: 0 }}
                     />
                   </div>
 
-                  <Button>Ganti Foto </Button>
+                  <Upload
+                    showUploadList={false}
+                    customRequest={async ({ file }) => {
+                      try {
+                        const formData = new FormData();
+
+                        formData.append('photo', file);
+
+                        const response = await axios.put(
+                          'http://localhost:5000/api/v1/user/profile-photo',
+                          formData,
+                          {
+                            headers: {
+                              'Content-Type': 'multipart/form-data',
+                              'x-auth-token': localStorage.getItem(CONSTANT.ACCESS_TOKEN),
+                            },
+                          }
+                        );
+
+                        const oldUser = JSON.parse(
+                          localStorage.getItem(CONSTANT.USER_ATTRIBUTES)
+                        );
+
+                        const updatedUser = {
+                          ...oldUser,
+                          photoProfile: response.data.data.photoProfile,
+                        };
+
+                        localStorage.setItem(
+                          CONSTANT.USER_ATTRIBUTES,
+                          JSON.stringify(updatedUser)
+                        );
+
+                        message.success('Foto profile berhasil diupload');
+
+                        window.location.reload();
+                      } catch (error) {
+                        console.log(error);
+
+                        message.error('Upload foto gagal');
+                      }
+                    }}
+                  >
+                    <Button>Ganti Foto</Button>
+                  </Upload>
                 </Row>
+
                 <Space direction="vertical">
                   <Title style={{ margin: 'auto' }} level={3}>
                     {user?.name}
                   </Title>
+
                   <Text strong>{user?.email}</Text>
+
                   <Space>
-                    <Text level={3}>{user?.squad}</Text>-<Text level={3}>{user?.status}</Text>
+                    <Text level={3}>{user?.squad}</Text>-
+                    <Text level={3}>{user?.status}</Text>
                   </Space>
                 </Space>
               </Space>
@@ -153,6 +263,7 @@ function DashboardPage() {
                   Sudahkah anda absen hari ini?
                 </Title>
               </Col>
+
               <Col>
                 <Button
                   onClick={() => navigate('./attendance')}
@@ -165,6 +276,7 @@ function DashboardPage() {
             </div>
           </Card>
         </Col>
+
         <Col md={8}>
           <Card>
             <div
@@ -179,10 +291,12 @@ function DashboardPage() {
                 <Title style={{ margin: 'auto' }} level={4}>
                   Album Wajah
                 </Title>
+
                 <Text>
                   Upload foto wajah anda agar sistem kami dapat mendeteksi wajah pribadi anda
                 </Text>
               </Col>
+
               <Col>
                 <Button
                   onClick={() => navigate('./facegallery')}
@@ -205,7 +319,12 @@ function DashboardPage() {
             <Title style={{ margin: 'auto' }} level={4}>
               Kalender Absensi
             </Title>
-            <Calendar cellRender={cellRender} mode="month" onSelect={handleMonthSelect} />
+
+            <Calendar
+              cellRender={cellRender}
+              mode="month"
+              onSelect={handleMonthSelect}
+            />
           </div>
         )}
       </Card>
