@@ -387,24 +387,35 @@ export const checkedAttendance = async (req, res) => {
 async function getLocationDetails(latitude, longitude) {
   try {
     const response = await axios.get(
-      `https://nominatim.openstreetmap.org/reverse`,
+      "https://nominatim.openstreetmap.org/reverse",
       {
         params: {
           format: "json",
           lat: latitude,
           lon: longitude,
         },
+        headers: {
+          "User-Agent": "attendance-app",
+        },
       }
     );
 
+    console.log("LOCATION RESPONSE:", response.data);
+
     const { display_name, address } = response.data;
+
     return {
       name:
-        address.road || address.neighbourhood || address.suburb || "Unknown",
-      address: display_name,
+        address?.road ||
+        address?.neighbourhood ||
+        address?.suburb ||
+        address?.city ||
+        "Unknown",
+      address: display_name || "Unknown",
     };
   } catch (error) {
-    console.error("Error fetching location details:", error);
+    console.error("Error fetching location details:", error.response?.data || error.message);
+
     return {
       name: "Unknown",
       address: "Unknown",
