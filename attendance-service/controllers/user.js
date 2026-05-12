@@ -5,6 +5,11 @@ import User from "../models/userModel.js";
 import EmployeeStatus from "../models/employeeStatusModel.js";
 import Squad from "../models/squadModel.js";
 import { Op } from "sequelize";
+import FacePhoto from "../models/facePhotoModel.js";
+import Attendance from "../models/attendanceModel.js";
+
+import fs from "fs";
+import path from "path";
 
 dotenv.config();
 
@@ -286,6 +291,97 @@ export const uploadProfilePhoto = async (req, res) => {
     });
   } catch (error) {
     console.log("UPLOAD ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    console.log("DELETE USER PARAM:", req.params.slug);
+
+    const user = await User.findOne({
+      where: {
+        uuid: req.params.slug,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User tidak ditemukan",
+      });
+    }
+
+    // hapus foto profile local
+    if (user.photoProfile) {
+      const imagePath = path.join(
+        process.cwd(),
+        "uploads/profile",
+        user.photoProfile
+      );
+
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    // hapus semua face photo user
+    const facePhotos = await FacePhoto.findAll({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    facePhotos.forEach((photo) => {
+      try {
+        if (photo.photoUrl?.url) {
+          const filename = photo.photoUrl.url.split("/").pop();
+
+          const facePath = path.join(
+            process.cwd(),
+            "uploads",
+            filename
+          );
+
+          if (fs.existsSync(facePath)) {
+            fs.unlinkSync(facePath);
+          }
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    await FacePhoto.destroy({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    // hapus attendance user
+    await Attendance.destroy({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    // hapus user
+    await User.destroy({
+      where: {
+        id: user.id,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User berhasil dihapus",
+    });
+  } catch (error) {
+    console.log("DELETE USER ERROR:", error);
 
     res.status(500).json({
       success: false,

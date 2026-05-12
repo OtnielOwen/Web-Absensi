@@ -13,6 +13,7 @@ import {
   Select,
   Space,
   Typography,
+  Popconfirm
 } from 'antd';
 import { TbUserEdit, TbArrowBackUp } from 'react-icons/tb';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -21,6 +22,8 @@ import DefaultLoading from '@/components/DefaultLoading';
 import { FORM } from '@/utilities/constant';
 import useMutationSubmit from '@/utilities/hooks/useMutationSubmit';
 import useQueryFetch from '@/utilities/hooks/useQueryFetch';
+
+
 
 const { Text, Title } = Typography;
 
@@ -71,7 +74,11 @@ function AdminUserDetailDashboard() {
           <Card style={{ marginTop: 16 }}>
             <Row justify="space-between" align="middle">
               <Col>
-                <Space align="center" size={md ? 'large' : 'small'} direction={!lg && 'vertical'}>
+                <Space
+                  align="center"
+                  size={md ? 'large' : 'small'}
+                  direction={!lg && 'vertical'}
+                >
                   <div>
                     <Avatar
                       size={128}
@@ -89,25 +96,44 @@ function AdminUserDetailDashboard() {
                     <Title style={{ margin: 'auto' }} level={3}>
                       {data?.name}
                     </Title>
+
                     <Text strong>{data?.email}</Text>
+
                     <Space>
-                      <Text level={3}>{data?.squad?.name}</Text>-
-                      <Text level={3}>{data?.employeeStatus?.name}</Text>
+                      <Text>{data?.squad?.name}</Text> -
+                      <Text>{data?.employeeStatus?.name}</Text>
                     </Space>
                   </Space>
                 </Space>
               </Col>
 
               <Col>
-                <Button
-                  type="primary"
-                  size="large"
-                  style={{ display: 'flex', alignItems: 'center' }}
-                  icon={<TbUserEdit style={{ fontSize: 20 }} />}
-                  onClick={onOpen}
-                >
-                  Edit User
-                </Button>
+                <Space>
+                  <Popconfirm
+                    title="Hapus user?"
+                    description="Data user akan dihapus permanen"
+                    okText="Hapus"
+                    cancelText="Batal"
+                    onConfirm={() => {
+                      console.log('DELETE CLICKED');
+                      submitDelete({});
+                    }}
+                  >
+                    <Button danger loading={isLoadingDelete}>
+                      Hapus
+                    </Button>
+                  </Popconfirm>
+
+                  <Button
+                    type="primary"
+                    size="large"
+                    style={{ display: 'flex', alignItems: 'center' }}
+                    icon={<TbUserEdit style={{ fontSize: 20 }} />}
+                    onClick={onOpen}
+                  >
+                    Edit User
+                  </Button>
+                </Space>
               </Col>
             </Row>
           </Card>

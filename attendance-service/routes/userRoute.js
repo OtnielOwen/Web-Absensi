@@ -5,7 +5,8 @@ import {
   createUser,
   loginUser,
   updateUser,
-  uploadProfilePhoto
+  uploadProfilePhoto,
+  deleteUser,
 } from "../controllers/user.js";
 import { adminOnly, verifyUser } from "../middleware/auth.js";
 import uploadProfile from "../middleware/uploadProfile.js";
@@ -23,6 +24,13 @@ router.put(
   verifyUser,
   uploadProfile.single("photo"),
   uploadProfilePhoto
+);
+
+router.delete(
+  "/api/v1/user/delete/:slug",
+  verifyUser,
+  adminOnly,
+  deleteUser
 );
 
 export default router;

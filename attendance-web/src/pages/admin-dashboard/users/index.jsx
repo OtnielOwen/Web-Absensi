@@ -6,6 +6,9 @@ import TableGeneric from '@/components/TableGeneric';
 import { dateFormat } from '@/utilities/dateHelper';
 import useQueryFetch from '@/utilities/hooks/useQueryFetch';
 
+import axios from 'axios';
+import { message } from 'antd';
+
 const { Title } = Typography;
 
 function DrawerContent({ isOpen, onClose, dataPagination }) {
@@ -115,6 +118,32 @@ function AdminUsersDashboard() {
     setIsOpen(false);
   };
 
+  const handleDelete = async (uuid) => {
+    try {
+      const token = localStorage.getItem('access_token');
+
+      console.log(localStorage);
+      console.log(token);
+
+      await axios.delete(
+        `http://localhost:5000/api/v1/user/delete/${uuid}`,
+        {
+          headers: {
+            "x-auth-token": token,
+          },
+        }
+      );
+
+      message.success('User berhasil dihapus');
+
+      dataPagination?.current?.refetch?.();
+    } catch (error) {
+      console.log(error);
+
+      message.error('Gagal menghapus user');
+    }
+  };
+
   return (
     <>
       <Title level={3} style={{ margin: 'auto' }}>
@@ -201,16 +230,21 @@ function AdminUsersDashboard() {
                     />
                   </Col>
                   <Col>
-                    <Popconfirm title="Hapus data user?">
+                    <Popconfirm
+                      title="Hapus data user?"
+                      description="Data user akan dihapus permanen"
+                      okText="Hapus"
+                      cancelText="Batal"
+                      onConfirm={() => handleDelete(record.uuid)}
+                    >
                       <Button
-                        // onClick={() => handleClick(record.uuid)}
                         type="text"
                         icon={<TbTrash style={{ fontSize: 20 }} />}
                         style={{
                           display: 'flex',
                           justifyContent: 'center',
                           alignItems: 'center',
-                          color: 'var(--ant-color-primary)',
+                          color: 'red',
                         }}
                       />
                     </Popconfirm>
