@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Form, Button, Space, Typography, Input, Select } from 'antd';
 import { Link } from 'react-router-dom';
 import { FORM } from '@/utilities/constant';
@@ -6,22 +7,43 @@ import axios from "axios";
 const { Title, Text } = Typography;
 
 function RegisterPage() {
+  const [squads, setSquads] = useState([]);
+  const [employeeStatuses, setEmployeeStatuses] = useState([]);
+
   const filterOption = (input, option) =>
     (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const squadRes = await axios.get("http://localhost:5000/api/v1/squad");
+        const squadData = Array.isArray(squadRes.data) ? squadRes.data : squadRes.data.data || [];
+        setSquads(squadData.map(item => ({
+          label: item.name,
+          value: item.id
+        })));
+
+        const statusRes = await axios.get("http://localhost:5000/api/v1/employee-status");
+        const statusData = Array.isArray(statusRes.data) ? statusRes.data : statusRes.data.data || [];
+        setEmployeeStatuses(statusData.map(item => ({
+          label: item.name,
+          value: item.id
+        })));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, []);
+
   const onFinish = async (values) => {
     try {
-      console.log("DATA REGISTER:", values);
-
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:5000/api/v1/user/create",
         values
       );
-
-      console.log("RESPONSE:", res.data);
       alert("Register berhasil!");
     } catch (err) {
-      console.error("ERROR:", err.response?.data || err.message);
       alert(err.response?.data?.message || "Register gagal!");
     }
   };
@@ -49,7 +71,6 @@ function RegisterPage() {
           <Input size="large" placeholder="Masukan NIK" />
         </Form.Item>
 
-        {/* ✅ FIX SQUAD */}
         <Form.Item label="Squad" name="squadId" rules={[{ required: true }]}>
           <Select
             size="large"
@@ -57,16 +78,10 @@ function RegisterPage() {
             placeholder="Pilih Squad"
             optionFilterProp="children"
             filterOption={filterOption}
-            options={[
-              {
-                value: 1, // ✅ ini sudah benar (ada di DB)
-                label: 'Digital Village',
-              },
-            ]}
+            options={squads}
           />
         </Form.Item>
 
-        {/* 🔥 FIX DI SINI */}
         <Form.Item label="Status Pegawai" name="employeeStatusId" rules={[{ required: true }]}>
           <Select
             size="large"
@@ -74,12 +89,7 @@ function RegisterPage() {
             placeholder="Pilih Status Pegawai"
             optionFilterProp="children"
             filterOption={filterOption}
-            options={[
-              {
-                value: 2, // 🔥 WAJIB 2 (karena di DB kamu id=2)
-                label: 'Karyawan Tetap',
-              },
-            ]}
+            options={employeeStatuses}
           />
         </Form.Item>
 
