@@ -5,6 +5,8 @@ import ForwardTableGeneric from '@/components/TableGeneric';
 import ModalCreateCondition from './components/ModalCreateCondition';
 import ModalEditCondition from './components/ModalEditCondition';
 
+import useMutationSubmit from '@/utilities/hooks/useMutationSubmit';
+
 const { Title } = Typography;
 
 function AdminMasterConditionDashboard() {
@@ -12,6 +14,7 @@ function AdminMasterConditionDashboard() {
   const [isOpenEdit, setIsOpenEdit] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [deleteSlug, setDeleteSlug] = useState(null);
 
   const onClose = () => {
     setIsOpen(false);
@@ -30,6 +33,28 @@ function AdminMasterConditionDashboard() {
   const onCreate = () => {
     setIsOpen(true);
     setIsSuccess(false);
+  };
+
+  const { submit: submitDelete } = useMutationSubmit({
+    url: deleteSlug
+      ? `/condition/delete/${deleteSlug}`
+      : '',
+    method: 'DELETE',
+    onSuccess() {
+      setIsSuccess(false);
+
+      setTimeout(() => {
+        setIsSuccess(true);
+      }, 100);
+    },
+  });
+
+  const onDelete = (slug) => {
+    setDeleteSlug(slug);
+
+    setTimeout(() => {
+      submitDelete();
+    }, 0);
   };
 
   return (
@@ -80,9 +105,11 @@ function AdminMasterConditionDashboard() {
                     />
                   </Col>
                   <Col>
-                    <Popconfirm title="Hapus data user?">
+                    <Popconfirm
+                      title="Hapus data condition?"
+                      onConfirm={() => onDelete(record.uuid)}
+                    >
                       <Button
-                        // onClick={() => handleClick(record.uuid)}
                         type="text"
                         icon={<TbTrash style={{ fontSize: 20 }} />}
                         style={{

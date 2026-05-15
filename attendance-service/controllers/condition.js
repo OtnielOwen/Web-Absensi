@@ -65,3 +65,33 @@ export const updateCondition = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const deleteCondition = async (req, res) => {
+  try {
+    const condition = await Condition.findOne({
+      where: {
+        uuid: req.params.slug,
+      },
+    });
+
+    if (!condition) {
+      return res.status(404).json({
+        message: "Data tidak ditemukan",
+      });
+    }
+
+    await Condition.destroy({
+      where: {
+        id: condition.id,
+      },
+    });
+
+    res.status(200).json({
+      message: "Kondisi kesehatan berhasil dihapus",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};

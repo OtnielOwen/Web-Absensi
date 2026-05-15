@@ -4,6 +4,7 @@ import {
   getConditionById,
   createCondition,
   updateCondition,
+  deleteCondition,
 } from "../controllers/condition.js";
 import { adminOnly, verifyUser } from "../middleware/auth.js";
 
@@ -17,6 +18,12 @@ router.patch(
   verifyUser,
   adminOnly,
   updateCondition
+);
+router.delete(
+  "/api/v1/condition/delete/:slug",
+  verifyUser,
+  adminOnly,
+  deleteCondition
 );
 
 export default router;
