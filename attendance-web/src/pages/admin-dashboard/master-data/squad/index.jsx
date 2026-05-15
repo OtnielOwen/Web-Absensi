@@ -5,10 +5,14 @@ import ForwardTableGeneric from '@/components/TableGeneric';
 import ModalCreateSquad from './components/ModalCreateSquad';
 import ModalEditSquad from './components/ModalEditSquad';
 
+import useMutationSubmit from '@/utilities/hooks/useMutationSubmit';
+
 const { Title } = Typography;
 
 function AdminMasterSquadDashboard() {
   const [squadSlug, setSquadSlug] = useState(null);
+  const [deleteSlug, setDeleteSlug] = useState(null);
+
   const [isOpenEdit, setIsOpenEdit] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -32,11 +36,30 @@ function AdminMasterSquadDashboard() {
     setIsSuccess(false);
   };
 
+  const { submit: submitDelete } = useMutationSubmit({
+    url: deleteSlug
+      ? `/squad/delete/${deleteSlug}`
+      : '',
+    method: 'DELETE',
+    onSuccess() {
+      setIsSuccess(true);
+    },
+  });
+
+  const onDelete = (slug) => {
+    setDeleteSlug(slug);
+
+    setTimeout(() => {
+      submitDelete();
+    }, 0);
+  };
+
   return (
     <>
       <Title level={3} style={{ margin: 'auto' }}>
         Data Squad
       </Title>
+
       <Card style={{ marginTop: 24 }}>
         <ForwardTableGeneric
           isRefetch={isSuccess}
@@ -58,7 +81,6 @@ function AdminMasterSquadDashboard() {
               dataIndex: ['name'],
               key: 'name',
             },
-
             {
               title: '',
               key: 'action',
@@ -79,10 +101,13 @@ function AdminMasterSquadDashboard() {
                       }}
                     />
                   </Col>
+
                   <Col>
-                    <Popconfirm title="Hapus data user?">
+                    <Popconfirm
+                      title="Hapus data squad?"
+                      onConfirm={() => onDelete(record.uuid)}
+                    >
                       <Button
-                        // onClick={() => handleClick(record.uuid)}
                         type="text"
                         icon={<TbTrash style={{ fontSize: 20 }} />}
                         style={{
@@ -108,7 +133,11 @@ function AdminMasterSquadDashboard() {
         setIsSuccess={setIsSuccess}
       />
 
-      <ModalCreateSquad isOpen={isOpen} onClose={onClose} setIsSuccess={setIsSuccess} />
+      <ModalCreateSquad
+        isOpen={isOpen}
+        onClose={onClose}
+        setIsSuccess={setIsSuccess}
+      />
     </>
   );
 }

@@ -67,3 +67,33 @@ export const updateSquad = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const deleteSquad = async (req, res) => {
+  try {
+    const squad = await Squad.findOne({
+      where: {
+        uuid: req.params.slug,
+      },
+    });
+
+    if (!squad) {
+      return res.status(404).json({
+        message: "Data tidak ditemukan",
+      });
+    }
+
+    await Squad.destroy({
+      where: {
+        id: squad.id,
+      },
+    });
+
+    res.status(200).json({
+      message: "Squad berhasil dihapus",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
