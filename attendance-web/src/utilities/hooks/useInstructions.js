@@ -1,52 +1,36 @@
 import { useEffect, useState } from 'react';
-import { shuffleArray } from 'face-api.js';
 import { calculateEAR, calculateMAR, calculateSmileFactor } from '../calculateHelper';
 import { INSTRUCTIONS, THRESHOLDS } from '../constant';
-import { getRandomInt } from '../numberHelper';
 
 export const useInstructions = (landmarks) => {
   const [instructionList, setInstructionList] = useState([]);
   const [currentInstructionIndex, setCurrentInstructionIndex] = useState(0);
-  const [showAlert, setShowAlert] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [actionCounts, setActionCounts] = useState({ mouth: 0, blink: 0, smile: 0 });
+  const [isLockBlink, setIsLockBlink] = useState(false);
   const [mouthOpenStartTime, setMouthOpenStartTime] = useState(null);
   const [smileStartTime, setSmileStartTime] = useState(null);
-  const [colorIntruction, setColorIntruction] = useState({
-    smile: 'red',
-    mouth: 'red',
-    blink: 'red',
-  });
 
   const generateRandomInstructions = () => {
-    const shuffledInstructions = shuffleArray(INSTRUCTIONS).map((instruction) => ({
+    const randomOne = [INSTRUCTIONS[Math.floor(Math.random() * INSTRUCTIONS.length)]];
+    
+    const singleInstruction = randomOne.map((instruction) => ({
       ...instruction,
-      count: instruction?.type === 'blink' ? getRandomInt(2, 5) : instruction?.count,
+      count: instruction?.type === 'blink' ? 2 : instruction?.count, 
+      duration: 1.5, 
     }));
 
-    setInstructionList(shuffledInstructions);
+    setInstructionList(singleInstruction);
     setCurrentInstructionIndex(0);
     setActionCounts({ mouth: 0, blink: 0, smile: 0 });
-    setShowAlert(true);
-    setMouthOpenStartTime(null);
-    setSmileStartTime(null);
-    setColorIntruction({
-      smile: 'red',
-      mouth: 'red',
-      blink: 'red',
-    });
+    setIsVerified(false);
   };
 
   const nextInstruction = () => {
     if (currentInstructionIndex < instructionList.length - 1) {
       setCurrentInstructionIndex((prev) => prev + 1);
-      setActionCounts({ mouth: 0, blink: 0, smile: 0 });
-      setShowAlert(true);
-      setMouthOpenStartTime(null);
-      setSmileStartTime(null);
     } else {
-      setIsVerified(true);
-      setShowAlert(false);
+      setIsVerified(true); 
     }
   };
 
@@ -55,42 +39,21 @@ export const useInstructions = (landmarks) => {
   }, []);
 
   useEffect(() => {
-    if (!landmarks || !instructionList?.length) return;
-
-    const handlers = {
-      mouth: () => handleMouthInstruction(),
-      blink: () => handleBlinkInstruction(),
-      smile: () => handleSmileInstruction(),
-    };
+    if (!landmarks || !instructionList?.length || isVerified) return;
 
     const currentInstruction = instructionList[currentInstructionIndex];
-    const handler = handlers[currentInstruction?.type];
-    if (handler) handler();
-  }, [
-    landmarks,
-    instructionList,
-    currentInstructionIndex,
-    actionCounts,
-    mouthOpenStartTime,
-    smileStartTime,
-  ]);
+    
+    if (currentInstruction?.type === 'mouth') handleMouthInstruction();
+    if (currentInstruction?.type === 'blink') handleBlinkInstruction();
+    if (currentInstruction?.type === 'smile') handleSmileInstruction();
+  }, [landmarks, actionCounts, isVerified]);
 
   const handleMouthInstruction = () => {
     const MAR = calculateMAR(landmarks);
-    const isMouthOpen = MAR > THRESHOLDS.MAR;
-
-    if (isMouthOpen) {
-      if (!mouthOpenStartTime) {
-        setMouthOpenStartTime(Date.now());
-      }
-      const elapsedTime = (Date.now() - mouthOpenStartTime) / 1000;
-      if (elapsedTime >= instructionList[currentInstructionIndex].duration) {
-        setColorIntruction((prev) => ({
-          ...prev,
-          mouth: 'green',
-        }));
+    if (MAR > THRESHOLDS.MAR) {
+      if (!mouthOpenStartTime) setMouthOpenStartTime(Date.now());
+      if ((Date.now() - mouthOpenStartTime) / 1000 >= instructionList[currentInstructionIndex].duration) {
         nextInstruction();
-        setMouthOpenStartTime(null);
       }
     } else {
       setMouthOpenStartTime(null);
@@ -99,39 +62,23 @@ export const useInstructions = (landmarks) => {
 
   const handleBlinkInstruction = () => {
     const EAR = calculateEAR(landmarks);
-    const isBlinking = EAR < THRESHOLDS.EAR;
-
-    if (isBlinking) {
-      setTimeout(() => {
-        const newCount = actionCounts.blink + 1;
-        setActionCounts((prev) => ({ ...prev, blink: newCount }));
-        if (newCount === instructionList[currentInstructionIndex].count) {
-          setColorIntruction((prev) => ({
-            ...prev,
-            blink: 'green',
-          }));
-          nextInstruction();
-        }
-      }, 500);
+    if (EAR < THRESHOLDS.EAR && !isLockBlink) {
+      setIsLockBlink(true);
+      const newCount = actionCounts.blink + 1;
+      setActionCounts((prev) => ({ ...prev, blink: newCount }));
+      if (newCount >= instructionList[currentInstructionIndex].count) {
+        nextInstruction();
+      }
+      setTimeout(() => setIsLockBlink(false), 400); 
     }
   };
 
   const handleSmileInstruction = () => {
     const smileFactor = calculateSmileFactor(landmarks);
-    const isSmiling = smileFactor > THRESHOLDS.SMILE;
-
-    if (isSmiling) {
-      if (!smileStartTime) {
-        setSmileStartTime(Date.now());
-      }
-      const elapsedTime = (Date.now() - smileStartTime) / 1000;
-      if (elapsedTime >= instructionList[currentInstructionIndex].duration) {
-        setColorIntruction((prev) => ({
-          ...prev,
-          smile: 'green',
-        }));
+    if (smileFactor > THRESHOLDS.SMILE) {
+      if (!smileStartTime) setSmileStartTime(Date.now());
+      if ((Date.now() - smileStartTime) / 1000 >= instructionList[currentInstructionIndex].duration) {
         nextInstruction();
-        setSmileStartTime(null);
       }
     } else {
       setSmileStartTime(null);
@@ -141,10 +88,8 @@ export const useInstructions = (landmarks) => {
   return {
     instructionList,
     currentInstructionIndex,
-    showAlert,
     isVerified,
     actionCounts,
-    generateRandomInstructions,
-    colorIntruction,
+    generateRandomInstructions
   };
 };

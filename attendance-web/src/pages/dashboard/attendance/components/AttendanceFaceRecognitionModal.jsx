@@ -20,7 +20,7 @@ function AttendanceFaceRecognition({ user, values, location, onSuccessAttendance
       })
       .then((res) => {
         setParticipants(res?.data?.data);
-        const profileList = createMatcher(res?.data?.data, 0.45);
+        const profileList = createMatcher(res?.data?.data, 0.55);
         profileList.then((result) => setFaceMatcher(result));
       });
   };
