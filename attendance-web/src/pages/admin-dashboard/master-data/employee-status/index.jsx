@@ -5,6 +5,8 @@ import ForwardTableGeneric from '@/components/TableGeneric';
 import ModalCreateEmployeeStatus from './components/ModalCreateEmployeeStatus';
 import ModalEditEmployeeStatus from './components/ModalEditEmployeeStatus';
 
+import useMutationSubmit from '@/utilities/hooks/useMutationSubmit';
+
 const { Title } = Typography;
 
 function AdminMasterEmployeeStatusDashboard() {
@@ -12,6 +14,7 @@ function AdminMasterEmployeeStatusDashboard() {
   const [isOpenEdit, setIsOpenEdit] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [deleteSlug, setDeleteSlug] = useState(null);
 
   const onClose = () => {
     setIsOpen(false);
@@ -30,6 +33,24 @@ function AdminMasterEmployeeStatusDashboard() {
   const onCreate = () => {
     setIsOpen(true);
     setIsSuccess(false);
+  };
+
+  const { submit: submitDelete } = useMutationSubmit({
+    url: deleteSlug
+      ? `/employee-status/delete/${deleteSlug}`
+      : '',
+    method: 'DELETE',
+    onSuccess() {
+      setIsSuccess(true);
+    },
+  });
+
+  const onDelete = (slug) => {
+    setDeleteSlug(slug);
+
+    setTimeout(() => {
+      submitDelete();
+    }, 0);
   };
 
   return (
@@ -80,9 +101,11 @@ function AdminMasterEmployeeStatusDashboard() {
                     />
                   </Col>
                   <Col>
-                    <Popconfirm title="Hapus data user?">
+                    <Popconfirm
+                      title="Hapus data status karyawan?"
+                      onConfirm={() => onDelete(record.uuid)}
+                    >
                       <Button
-                        // onClick={() => handleClick(record.uuid)}
                         type="text"
                         icon={<TbTrash style={{ fontSize: 20 }} />}
                         style={{

@@ -4,6 +4,7 @@ import {
   getEmployeeStatusById,
   createEmployeeStatus,
   updateEmployeeStatus,
+  deleteEmployeeStatus,
 } from "../controllers/employeeStatus.js";
 import { adminOnly, verifyUser } from "../middleware/auth.js";
 
@@ -27,6 +28,12 @@ router.patch(
   adminOnly,
   verifyUser,
   updateEmployeeStatus
+);
+router.delete(
+  "/api/v1/employee-status/delete/:slug",
+  adminOnly,
+  verifyUser,
+  deleteEmployeeStatus
 );
 
 export default router;

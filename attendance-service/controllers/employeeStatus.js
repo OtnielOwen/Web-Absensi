@@ -65,3 +65,33 @@ export const updateEmployeeStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const deleteEmployeeStatus = async (req, res) => {
+  try {
+    const employeeStatus = await EmployeeStatus.findOne({
+      where: {
+        uuid: req.params.slug,
+      },
+    });
+
+    if (!employeeStatus) {
+      return res.status(404).json({
+        message: "Data tidak ditemukan",
+      });
+    }
+
+    await EmployeeStatus.destroy({
+      where: {
+        id: employeeStatus.id,
+      },
+    });
+
+    res.status(200).json({
+      message: "Berhasil menghapus status karyawan",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
