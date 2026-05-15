@@ -4,6 +4,7 @@ import {
   getWorkingStatusById,
   createWorkingStatus,
   updateWorkingStatus,
+  deleteWorkingStatus,
 } from "../controllers/workingStatus.js";
 import { adminOnly, verifyUser } from "../middleware/auth.js";
 
@@ -27,6 +28,12 @@ router.patch(
   adminOnly,
   verifyUser,
   updateWorkingStatus
+);
+router.delete(
+  "/api/v1/working-status/delete/:slug",
+  adminOnly,
+  verifyUser,
+  deleteWorkingStatus
 );
 
 export default router;
