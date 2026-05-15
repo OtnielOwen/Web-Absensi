@@ -41,7 +41,11 @@ function AdminMasterEmployeeStatusDashboard() {
       : '',
     method: 'DELETE',
     onSuccess() {
-      setIsSuccess(true);
+      setIsSuccess(false);
+
+      setTimeout(() => {
+        setIsSuccess(true);
+      }, 100);
     },
   });
 
