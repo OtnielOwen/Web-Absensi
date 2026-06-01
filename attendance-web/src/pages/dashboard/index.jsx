@@ -24,12 +24,16 @@ import { Upload, message } from 'antd';
 import axios from 'axios';
 import CONSTANT from '@/utilities/constant';
 
+import UserAttendanceSummary from '../admin-dashboard/users/components/UserAttendanceSummary';
+
 const { Title, Text } = Typography;
 
 function DashboardPage() {
   const { md, lg } = Grid.useBreakpoint();
   const navigate = useNavigate();
   const user = getUser();
+
+  console.log(user)
 
   const [selectedPeriod, setSelectedPeriod] = useState({
     month: dayjs().format('MM'),
@@ -310,6 +314,12 @@ function DashboardPage() {
           </Card>
         </Col>
       </Row>
+
+      <UserAttendanceSummary
+        userId={user?.uuid}
+        month={selectedPeriod.month}
+        year={selectedPeriod.year}
+      />
 
       <Card style={{ marginTop: 16 }}>
         {isLoading ? (
