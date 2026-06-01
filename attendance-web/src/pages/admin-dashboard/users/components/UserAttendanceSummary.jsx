@@ -2,7 +2,7 @@ import { Card, Col, Progress, Row, Statistic, Tag } from 'antd';
 import useQueryFetch from '@/utilities/hooks/useQueryFetch';
 import dayjs from 'dayjs';
 
-const OFFICE_START_TIME = '14:00:00';
+const OFFICE_START_TIME = '08:00:00';
 
 function UserAttendanceSummary({ userId, month, year }) {
   const { data: attendanceData = [] } = useQueryFetch({

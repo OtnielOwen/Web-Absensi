@@ -27,7 +27,7 @@ import CONSTANT from '@/utilities/constant';
 import UserAttendanceSummary from '../admin-dashboard/users/components/UserAttendanceSummary';
 
 const { Title, Text } = Typography;
-const OFFICE_START_TIME = '14:00:00';
+const OFFICE_START_TIME = '08:00:00';
 
 function DashboardPage() {
   const { md, lg } = Grid.useBreakpoint();

@@ -15,7 +15,7 @@ function AttendanceChart() {
     });
 
     const totalAttendance = data.length;
-    const OFFICE_START_TIME = '14:00:00';
+    const OFFICE_START_TIME = '08:00:00';
 
     const totalLate = data.filter(
         (item) => item?.time > OFFICE_START_TIME,
