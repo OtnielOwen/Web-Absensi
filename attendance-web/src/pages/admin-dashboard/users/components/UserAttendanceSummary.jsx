@@ -10,8 +10,13 @@ function UserAttendanceSummary({ userId, month, year }) {
     enabled: Boolean(userId),
   });
 
+  const targetMonth = month || dayjs().format('MM');
+  const targetYear = year || dayjs().format('YYYY');
+
   const filteredAttendance = attendanceData.filter((item) => {
     if (!item.date) return false;
+
+    if (!month || !year) return true;
 
     const itemMonth = dayjs(item.date).format('MM');
     const itemYear = dayjs(item.date).format('YYYY');

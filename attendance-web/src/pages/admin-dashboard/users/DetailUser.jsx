@@ -26,6 +26,8 @@ import useQueryFetch from '@/utilities/hooks/useQueryFetch';
 
 import UserAttendanceSummary from '@/pages/admin-dashboard/users/components/UserAttendanceSummary'
 
+import dayjs from 'dayjs';
+
 const { Text, Title } = Typography;
 
 function AdminUserDetailDashboard() {
@@ -187,25 +189,25 @@ function AdminUserDetailDashboard() {
         </div>
       )}
 
-      {!isAddMode && (
-        <div style={{ marginTop: 16 }}>
-          <Title level={4} style={{ margin: 'auto' }}>
-            Absensi Anda
-          </Title>
+      {!isAddMode && data && (
+          <div style={{ marginTop: 16 }}>
+            <Title level={4} style={{ margin: 'auto' }}>
+              Absensi Anda
+            </Title>
 
-          <UserAttendanceSummary
-            userId={data?.id}
-          />
+            <UserAttendanceSummary
+              userId={data?.id}
+            />
 
-          <Title level={4} style={{ marginTop: 24 }}>
-            Riwayat Absensi
-          </Title>
+            <Title level={4} style={{ marginTop: 24 }}>
+              Riwayat Absensi
+            </Title>
 
-          <AttendanceTable
-            dataSourceUrl={`/attendance?userId=${data?.id}`}
-          />
-        </div>
-      )}
+            <AttendanceTable
+              dataSourceUrl={`/attendance?userId=${data?.id}`}
+            />
+          </div>
+        )}
 
       {!isAddMode && (
         <Modal
