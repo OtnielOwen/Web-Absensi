@@ -27,25 +27,25 @@ import CONSTANT from '@/utilities/constant';
 import UserAttendanceSummary from '../admin-dashboard/users/components/UserAttendanceSummary';
 
 const { Title, Text } = Typography;
+const OFFICE_START_TIME = '14:00:00';
 
 function DashboardPage() {
   const { md, lg } = Grid.useBreakpoint();
   const navigate = useNavigate();
   const user = getUser();
 
-  console.log(user)
+  console.log(user);
 
   const [selectedPeriod, setSelectedPeriod] = useState({
     month: dayjs().format('MM'),
     year: dayjs().format('YYYY'),
   });
 
-  const { data, isLoading } = useQueryFetch({
-    url: '/attendance-period',
-    params: {
-      month: selectedPeriod.month,
-      year: selectedPeriod.year,
-    },
+  const [calendarMode, setCalendarMode] = useState('month');
+
+  const { data: attendanceData = [], isLoading } = useQueryFetch({
+    url: `/attendance?userId=${user?.uuid}`,
+    enabled: Boolean(user?.uuid),
   });
 
   const handleMonthSelect = (date) => {
@@ -58,8 +58,16 @@ function DashboardPage() {
     });
   };
 
+  const handlePanelChange = (date, mode) => {
+    setCalendarMode(mode);
+    setSelectedPeriod({
+      month: date?.format('MM'),
+      year: date?.format('YYYY'),
+    });
+  };
+
   const dateCellRender = (current) => {
-    const attendanceForDate = data?.filter((attendance) =>
+    const attendanceForDate = attendanceData?.filter((attendance) =>
       dayjs(attendance.date).isSame(current, 'day')
     );
 
@@ -67,10 +75,8 @@ function DashboardPage() {
       switch (condition) {
         case 'Sakit':
           return 'error';
-
         case 'Kurang Fit':
           return '#faad14';
-
         default:
           return '#52c41a';
       }
@@ -98,51 +104,40 @@ function DashboardPage() {
     );
   };
 
-  const cellRender = (current, info) => {
-    if (info.type === 'date') return dateCellRender(current);
+  const monthCellRender = (current) => {
+    const currentMonth = current.format('MM');
+    const currentYear = current.format('YYYY');
 
-    return info.originNode;
+    const monthlyData = attendanceData.filter((item) => {
+      if (!item.date) return false;
+      return (
+        dayjs(item.date).format('MM') === currentMonth &&
+        dayjs(item.date).format('YYYY') === currentYear
+      );
+    });
+
+    const total = monthlyData.length;
+    const totalLate = monthlyData.filter((item) => item.time > OFFICE_START_TIME).length;
+    const totalOnTime = total - totalLate;
+
+    if (total === 0) {
+      return <div style={{ marginTop: 8, color: '#bfbfbf', fontSize: 12 }}>Tidak ada data</div>;
+    }
+
+    return (
+      <div style={{ marginTop: 8, fontSize: 12, textAlign: 'left', paddingLeft: 8 }}>
+        <div style={{ color: '#1677ff' }}>Hadir: <b>{total}</b></div>
+        <div style={{ color: '#52c41a' }}>Tepat: <b>{totalOnTime}</b></div>
+        <div style={{ color: '#ff4d4f' }}>Telat: <b>{totalLate}</b></div>
+      </div>
+    );
   };
 
-  const handleUploadPhoto = async (e) => {
-    const file = e.target.files[0];
+  const cellRender = (current, info) => {
+    if (info.type === 'date') return dateCellRender(current);
+    if (info.type === 'month') return monthCellRender(current);
 
-    if (!file) return;
-
-    try {
-      const formData = new FormData();
-
-      formData.append('photo', file);
-
-      const token = localStorage.getItem('access_token');
-
-      const res = await fetch('http://localhost:5000/api/v1/user/profile-photo', {
-        method: 'PUT',
-        headers: {
-          'x-auth-token': token,
-        },
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      console.log(data);
-
-      alert('Foto profile berhasil diupload');
-
-      const updatedUser = {
-        ...user,
-        photoProfile: data?.data?.photoProfile,
-      };
-
-      localStorage.setItem('user_attributes', JSON.stringify(updatedUser));
-
-      window.location.reload();
-    } catch (error) {
-      console.error(error);
-
-      alert('Upload gagal');
-    }
+    return info.originNode;
   };
 
   return (
@@ -193,9 +188,7 @@ function DashboardPage() {
                     customRequest={async ({ file }) => {
                       try {
                         const formData = new FormData();
-
                         formData.append('photo', file);
-
                         const response = await axios.put(
                           'http://localhost:5000/api/v1/user/profile-photo',
                           formData,
@@ -222,11 +215,9 @@ function DashboardPage() {
                         );
 
                         message.success('Foto profile berhasil diupload');
-
                         window.location.reload();
                       } catch (error) {
                         console.log(error);
-
                         message.error('Upload foto gagal');
                       }
                     }}
@@ -239,9 +230,7 @@ function DashboardPage() {
                   <Title style={{ margin: 'auto' }} level={3}>
                     {user?.name}
                   </Title>
-
                   <Text strong>{user?.email}</Text>
-
                   <Space>
                     <Text level={3}>{user?.squad}</Text>-
                     <Text level={3}>{user?.status}</Text>
@@ -267,7 +256,6 @@ function DashboardPage() {
                   Sudahkah anda absen hari ini?
                 </Title>
               </Col>
-
               <Col>
                 <Button
                   onClick={() => navigate('./attendance')}
@@ -295,12 +283,10 @@ function DashboardPage() {
                 <Title style={{ margin: 'auto' }} level={4}>
                   Album Wajah
                 </Title>
-
                 <Text>
                   Upload foto wajah anda agar sistem kami dapat mendeteksi wajah pribadi anda
                 </Text>
               </Col>
-
               <Col>
                 <Button
                   onClick={() => navigate('./facegallery')}
@@ -330,11 +316,21 @@ function DashboardPage() {
               Kalender Absensi
             </Title>
 
-            <Calendar
-              cellRender={cellRender}
-              mode="month"
-              onSelect={handleMonthSelect}
-            />
+            <div className={calendarMode === 'month' ? 'hide-calendar-year' : ''}>
+              <style>{`
+                .hide-calendar-year .ant-picker-calendar-year-select {
+                  display: none !important;
+                }
+              `}</style>
+              <Calendar
+                locale={{ month: 'Day', year: 'Month' }}
+                value={dayjs(`${selectedPeriod.year}-${selectedPeriod.month}-01`)}
+                cellRender={cellRender}
+                mode={calendarMode}
+                onSelect={handleMonthSelect}
+                onPanelChange={handlePanelChange}
+              />
+            </div>
           </div>
         )}
       </Card>
