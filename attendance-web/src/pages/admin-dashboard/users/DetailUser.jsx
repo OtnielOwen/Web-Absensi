@@ -24,6 +24,8 @@ import { FORM } from '@/utilities/constant';
 import useMutationSubmit from '@/utilities/hooks/useMutationSubmit';
 import useQueryFetch from '@/utilities/hooks/useQueryFetch';
 
+import UserAttendanceSummary from '@/pages/admin-dashboard/users/components/UserAttendanceSummary'
+
 const { Text, Title } = Typography;
 
 function AdminUserDetailDashboard() {
@@ -55,6 +57,8 @@ function AdminUserDetailDashboard() {
     url: `/user/${slug}`,
     enabled: !isAddMode,
   });
+
+  console.log(data);
 
   const {
     submit: submitDelete,
@@ -187,6 +191,14 @@ function AdminUserDetailDashboard() {
         <div style={{ marginTop: 16 }}>
           <Title level={4} style={{ margin: 'auto' }}>
             Absensi Anda
+          </Title>
+
+          <UserAttendanceSummary
+            userId={data?.id}
+          />
+
+          <Title level={4} style={{ marginTop: 24 }}>
+            Riwayat Absensi
           </Title>
 
           <AttendanceTable
