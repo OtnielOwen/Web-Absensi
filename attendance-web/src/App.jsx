@@ -25,6 +25,7 @@ const DashboardPage = lazy(() => import('@/pages/dashboard'));
 const AttendancePage = lazy(() => import('@/pages/dashboard/attendance'));
 const FaceGalleryPage = lazy(() => import('@/pages/dashboard/face-gallery'));
 const AddFaceGalleryPage = lazy(() => import('@/pages/dashboard/face-gallery/AddFace'));
+const MonthlyRecap = lazy(() => import('@/pages/dashboard/monthly-recap/index'));
 
 // Admin
 
@@ -91,6 +92,7 @@ function App() {
                     <Route path="attendance" element={<AttendancePage />} />
                     <Route path="facegallery" element={<FaceGalleryPage />} />
                     <Route path="facegallery/add" element={<AddFaceGalleryPage />} />
+                    <Route path="rekap-bulanan" element={<MonthlyRecap />} />
                   </Route>
                 </Route>
 

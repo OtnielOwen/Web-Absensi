@@ -8,6 +8,7 @@ import {
   TbUsers,
   TbBrandDatabricks,
   TbCircleDashed,
+  TbFileText
 } from 'react-icons/tb';
 import { Link, useLocation } from 'react-router-dom';
 import { useGetLoggedUser } from '@/utilities/authorization';
@@ -24,6 +25,7 @@ const menuItems = [
   createMenuItem('/dashboard', 'Dashboard', TbHome),
   createMenuItem('/dashboard/attendance', 'Absensi', TbUserScan),
   createMenuItem('/dashboard/facegallery', 'Album Wajah', TbPhoto),
+  createMenuItem('/dashboard/rekap-bulanan', 'Rekap Bulanan', TbFileText),
 ];
 
 const menuItemsAdmin = [
