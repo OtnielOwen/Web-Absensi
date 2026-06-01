@@ -8,6 +8,8 @@ import useQueryFetch from '@/utilities/hooks/useQueryFetch';
 import 'dayjs/locale/id';
 import ModalExport from './components/ModalExport';
 
+import AttendanceChart from './components/AttendanceChart';
+
 const { RangePicker } = DatePicker;
 
 const { Title, Text } = Typography;
@@ -106,6 +108,8 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
 }
 
 function AdminAttendanceListDashboard() {
+  const OFFICE_START_TIME = '14:00:00';
+
   const dataPagination = useRef();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -142,6 +146,8 @@ function AdminAttendanceListDashboard() {
       <Title level={4} style={{ margin: 'auto' }}>
         Data Absensi
       </Title>
+
+      <AttendanceChart />
 
       <Card style={{ marginTop: 16 }}>
         <ForwardTableGeneric
@@ -237,6 +243,38 @@ function AdminAttendanceListDashboard() {
               title: 'Waktu',
               dataIndex: 'time',
               key: 'time',
+              render: (time) => {
+                const isLate = time > OFFICE_START_TIME;
+
+                return (
+                  <span
+                    style={{
+                      color: isLate ? '#ff4d4f' : '#52c41a',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {time}
+                  </span>
+                );
+              },
+            },
+            {
+              title: 'Ketepatan',
+              key: 'ketepatan',
+              render: (_, record) => {
+                const isLate = record?.time > OFFICE_START_TIME;
+
+                return (
+                  <span
+                    style={{
+                      color: isLate ? '#ff4d4f' : '#52c41a',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {isLate ? 'Telat' : 'Tepat Waktu'}
+                  </span>
+                );
+              },
             },
             {
               title: 'Tanggal',

@@ -62,7 +62,7 @@ function LoginPage() {
         <Col>
           <Link to="/register" style={{ color: 'var(--ant-color-primary)' }}>
             {' '}
-            Lupa Password
+            Daftar Akun
           </Link>
         </Col>
       </Row>
