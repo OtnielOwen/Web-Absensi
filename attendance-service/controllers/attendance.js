@@ -78,6 +78,7 @@ export const getAllUsersAttendance = async (req, res) => {
   const filterOptions = {};
   const filterOptionsByUser = {};
 
+  // 1. Filter dari Tabel User (Employee Status & Squad)
   if (req.query.employee_status_id) {
     filterOptionsByUser.employeeStatusId = req.query.employee_status_id;
   }
@@ -90,12 +91,33 @@ export const getAllUsersAttendance = async (req, res) => {
     filterOptionsByUser[Op.or] = [{ name: { [Op.iLike]: `%${req.query.q}%` } }];
   }
 
+  // 2. Filter Tanggal Absensi
   if (req.query.start_date && req.query.end_date) {
     const startDate = new Date(req.query.start_date);
     const endDate = new Date(req.query.end_date);
     filterOptions.date = {
       [Op.between]: [startDate, endDate],
     };
+  }
+
+  // 3. Filter Status Absen (Condition)
+  if (req.query.condition_id) {
+    filterOptions.conditionId = req.query.condition_id;
+  }
+
+  // 4. Filter Status Kerja (Working Status)
+  if (req.query.working_status_id) {
+    filterOptions.workingStatusId = req.query.working_status_id;
+  }
+
+  // 5. Filter Ketepatan (Tepat Waktu / Telat)
+  if (req.query.ketepatan) {
+    const OFFICE_START_TIME = '08:00:00';
+    if (req.query.ketepatan === 'late') {
+      filterOptions.time = { [Op.gt]: OFFICE_START_TIME };
+    } else if (req.query.ketepatan === 'ontime') {
+      filterOptions.time = { [Op.lte]: OFFICE_START_TIME };
+    }
   }
 
   const options = {
@@ -166,7 +188,7 @@ export const exportAttendanceToExcel = async (req, res) => {
     const filterOptions = {};
     const filterOptionsByUser = {};
 
-    // Apply filters dynamically
+    // 1. Apply filters dynamically (User fields)
     if (req.query.employee_status_id) {
       filterOptionsByUser.employeeStatusId = req.query.employee_status_id;
     }
@@ -181,6 +203,7 @@ export const exportAttendanceToExcel = async (req, res) => {
       ];
     }
 
+    // 2. Apply filters dynamically (Attendance fields)
     if (req.query.start_date && req.query.end_date) {
       const startDate = new Date(req.query.start_date);
       const endDate = new Date(req.query.end_date);
@@ -189,7 +212,24 @@ export const exportAttendanceToExcel = async (req, res) => {
       };
     }
 
-    // Fetch attendance data with all related models
+    // 3. Tambahan filter baru agar export sinkron dengan UI table
+    if (req.query.condition_id) {
+      filterOptions.conditionId = req.query.condition_id;
+    }
+
+    if (req.query.working_status_id) {
+      filterOptions.workingStatusId = req.query.working_status_id;
+    }
+
+    if (req.query.ketepatan) {
+      const OFFICE_START_TIME = '08:00:00';
+      if (req.query.ketepatan === 'late') {
+        filterOptions.time = { [Op.gt]: OFFICE_START_TIME };
+      } else if (req.query.ketepatan === 'ontime') {
+        filterOptions.time = { [Op.lte]: OFFICE_START_TIME };
+      }
+    }
+
     const attendances = await Attendance.findAll({
       where: filterOptions,
       include: [
@@ -218,7 +258,6 @@ export const exportAttendanceToExcel = async (req, res) => {
       });
     }
 
-    // Export to Excel
     if (typeExport.includes("xlsx")) {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Attendance");
@@ -257,7 +296,6 @@ export const exportAttendanceToExcel = async (req, res) => {
         ]);
       });
 
-      // Set Excel response headers
       res.setHeader(
         "Content-Type",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -305,6 +343,7 @@ export const exportAttendanceToExcel = async (req, res) => {
     res.status(500).json({ message: "Error exporting data" });
   }
 };
+
 export const getAttendanceByPeriod = async (req, res) => {
   try {
     const { month, year } = req.query;

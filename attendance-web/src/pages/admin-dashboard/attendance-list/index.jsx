@@ -7,11 +7,9 @@ import ForwardTableGeneric from '@/components/TableGeneric';
 import useQueryFetch from '@/utilities/hooks/useQueryFetch';
 import 'dayjs/locale/id';
 import ModalExport from './components/ModalExport';
-
 import AttendanceChart from './components/AttendanceChart';
 
 const { RangePicker } = DatePicker;
-
 const { Title, Text } = Typography;
 
 function DrawerContent({ isOpen, onClose, dataPagination }) {
@@ -36,10 +34,30 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
     enabled: Boolean(isOpen),
   });
 
+  const {
+    data: dataCondition = [],
+    isLoading: isLoadingCondition,
+    refetch: refetchCondition,
+  } = useQueryFetch({
+    url: '/condition',
+    enabled: Boolean(isOpen),
+  });
+
+  const {
+    data: dataWorkingStatus = [],
+    isLoading: isLoadingWorkingStatus,
+    refetch: refetchWorkingStatus,
+  } = useQueryFetch({
+    url: '/working-status',
+    enabled: Boolean(isOpen),
+  });
+
   useMemo(() => {
     if (isOpen) {
       refetchEmployeeStatus();
       refetchSquad();
+      refetchCondition();
+      refetchWorkingStatus();
     }
   }, [isOpen]);
 
@@ -50,6 +68,9 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
     dataPagination?.current?.setByQuery({
       employee_status_id: values.employee_status_id,
       squad_id: values.squad_id,
+      condition_id: values.condition_id,
+      working_status_id: values.working_status_id,
+      ketepatan: values.ketepatan,
     });
     setTimeout(() => {
       onClose();
@@ -63,6 +84,9 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
       initialValues={{
         employee_status_id: paramsObj.employee_status_id,
         squad_id: paramsObj.squad_id,
+        condition_id: paramsObj.condition_id,
+        working_status_id: paramsObj.working_status_id,
+        ketepatan: paramsObj.ketepatan,
       }}
     >
       <Row justify="space-between">
@@ -80,6 +104,7 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
               }))}
             />
           </Form.Item>
+
           <Form.Item name="squad_id" label="Squad">
             <Select
               loading={isLoadingSquad}
@@ -91,6 +116,45 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
                 value: id,
                 label: name,
               }))}
+            />
+          </Form.Item>
+
+          <Form.Item name="condition_id" label="Status Absen">
+            <Select
+              loading={isLoadingCondition}
+              size="large"
+              allowClear
+              optionFilterProp="children"
+              filterOption={filterOption}
+              options={dataCondition?.map(({ name, id }) => ({
+                value: id,
+                label: name,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item name="working_status_id" label="Status Kerja">
+            <Select
+              loading={isLoadingWorkingStatus}
+              size="large"
+              allowClear
+              optionFilterProp="children"
+              filterOption={filterOption}
+              options={dataWorkingStatus?.map(({ name, id }) => ({
+                value: id,
+                label: name,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item name="ketepatan" label="Ketepatan">
+            <Select
+              size="large"
+              allowClear
+              options={[
+                { value: 'ontime', label: 'Tepat Waktu' },
+                { value: 'late', label: 'Telat' },
+              ]}
             />
           </Form.Item>
         </Col>
@@ -108,7 +172,7 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
 }
 
 function AdminAttendanceListDashboard() {
-const OFFICE_START_TIME = '08:00:00';
+  const OFFICE_START_TIME = '08:00:00';
 
   const dataPagination = useRef();
   const navigate = useNavigate();
@@ -185,6 +249,9 @@ const OFFICE_START_TIME = '08:00:00';
             squad: 'squad_id',
             startDate: 'start_date',
             endDate: 'end_date',
+            condition: 'condition_id',
+            workingStatus: 'working_status_id',
+            ketepatan: 'ketepatan',
           }}
           dataSourceUrl="/all-users/attendance"
           columns={[
@@ -219,7 +286,6 @@ const OFFICE_START_TIME = '08:00:00';
               dataIndex: ['condition', 'name'],
               key: 'status',
             },
-
             {
               title: 'Keterangan',
               dataIndex: 'description',
@@ -245,7 +311,6 @@ const OFFICE_START_TIME = '08:00:00';
               key: 'time',
               render: (time) => {
                 const isLate = time > OFFICE_START_TIME;
-
                 return (
                   <span
                     style={{
@@ -263,7 +328,6 @@ const OFFICE_START_TIME = '08:00:00';
               key: 'ketepatan',
               render: (_, record) => {
                 const isLate = record?.time > OFFICE_START_TIME;
-
                 return (
                   <span
                     style={{
@@ -290,7 +354,6 @@ const OFFICE_START_TIME = '08:00:00';
                 return <Text>{estimateMonth}</Text>;
               },
             },
-
             {
               width: '30%',
               title: 'Alamat Lokasi',
