@@ -16,6 +16,22 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
   const [params] = useSearchParams();
   const paramsObj = useMemo(() => Object.fromEntries(params.entries()), [params]);
 
+  const parseId = (val) => {
+    if (!val) return undefined;
+    const num = Number(val);
+    return isNaN(num) ? val : num; 
+  };
+
+  const initialFormValues = useMemo(() => {
+    return {
+      employee_status_id: parseId(paramsObj.employee_status_id),
+      squad_id: parseId(paramsObj.squad_id),
+      condition_id: parseId(paramsObj.condition_id),
+      working_status_id: parseId(paramsObj.working_status_id),
+      ketepatan: paramsObj.ketepatan || undefined,
+    };
+  }, [paramsObj]);
+
   const {
     data: dataEmployeeStatus = [],
     isLoading: isLoadingEmployeeStatus,
@@ -81,13 +97,7 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
     <Form
       layout="vertical"
       onFinish={onFinish}
-      initialValues={{
-        employee_status_id: paramsObj.employee_status_id,
-        squad_id: paramsObj.squad_id,
-        condition_id: paramsObj.condition_id,
-        working_status_id: paramsObj.working_status_id,
-        ketepatan: paramsObj.ketepatan,
-      }}
+      initialValues={initialFormValues}
     >
       <Row justify="space-between">
         <Col span={24}>
@@ -118,7 +128,7 @@ function DrawerContent({ isOpen, onClose, dataPagination }) {
               }))}
             />
           </Form.Item>
-
+          
           <Form.Item name="condition_id" label="Status Absen">
             <Select
               loading={isLoadingCondition}
@@ -249,9 +259,9 @@ function AdminAttendanceListDashboard() {
             squad: 'squad_id',
             startDate: 'start_date',
             endDate: 'end_date',
-            condition: 'condition_id',
-            workingStatus: 'working_status_id',
-            ketepatan: 'ketepatan',
+            condition: 'condition_id',        
+            workingStatus: 'working_status_id', 
+            ketepatan: 'ketepatan',           
           }}
           dataSourceUrl="/all-users/attendance"
           columns={[
